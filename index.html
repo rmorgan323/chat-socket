@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; font-size: 20px; font-weight: bold; color: #555; outline: none; }
+      body { font: 13px Helvetica, Arial; }
+      form { background: #000; position: fixed; bottom: 0; width: 100%; }
+      form input { border: 0; background-color: #eee; height: 40px; width: calc(100% - 100px); padding: 0 20px;}
+      form button { width: 100px; float: right; height: 40px; background: rgb(130, 224, 255); border: none; cursor: pointer;}
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages li { padding: 5px 10px; }
+      #messages li:nth-child(odd) { background: #eee; }
+    </style>
+  </head>
+
+  <body>
+    <ul id="messages"></ul>
+    <form action="">
+      <input id="m" autocomplete="off" /><button>Send</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      $(function () {
+        var socket = io();
+        $('#m').on('keydown', (event) => {
+          socket.emit('is typing', 'someone is typing...')
+        })
+        $('form').submit(function() {
+          event.preventDefault();
+          socket.emit('chat message', $('#m').val());
+          $('#m').val('');
+          return false;
+        });
+        socket.on('user connect', msg => {
+          $('#messages').append($('<li>').text(msg))
+        });
+        socket.on('chat message', msg => {
+          $('#messages').append($('<li>').text(msg));
+          $('#m').attr('placeholder', '');
+        });
+        socket.on('is typing', msg => {
+          $('#m').attr('placeholder', msg);
+        });
+        socket.on('user disconnect', msg => {
+          $('#messages').append($('<li>').text(msg))
+        });
+      });
+    </script>
+  </body>
+</html>
